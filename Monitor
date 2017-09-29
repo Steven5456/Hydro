@@ -1,14 +1,25 @@
 // This #include statement was automatically added by the Particle IDE.
-#include <spark-plotly.h>
-
-// This #include statement was automatically added by the Particle IDE.
-#include <ThingSpeak.h>
+#include <DS18B20.h>
 
 // This #include statement was automatically added by the Particle IDE.
 #include <Adafruit_DHT.h>
 
 // This #include statement was automatically added by the Particle IDE.
-#include <DS18B20.h>
+#include <ThingSpeak.h>
+
+// This #include statement was automatically added by the Particle IDE.
+#include <spark-plotly.h>
+
+// This #include statement was automatically added by the Particle IDE.
+#include <SparkIntervalTimer.h>
+
+// This #include statement was automatically added by the Particle IDE.
+#include <spark-plotly.h>
+
+
+IntervalTimer myTimer;	
+
+
 
 
 DHT dht11(2, DHT11); //DHTPIN, DHTTYPE
@@ -43,6 +54,8 @@ int count = 0;
 int relay = D3;
 int reed = D5;
 int val = 0;
+int intervalmSec = 60000;
+int intervalmin = 1;
 
 TCPClient client;
 //unsigned int myChannelNumber = 203022; // replace with your ChannelID
@@ -70,31 +83,39 @@ void setup() {
    graph.init();
    graph.fileopt = "extend";
    graph.openStream(); 
+   
+     //myTimer.begin(readSensors, 60000, hmSec);  //use timer to schedule sensor reading and watering events 
+     
+     //Particle.function("Post Sensors", readSensors); //test using remote control of functions feature (In particle phone app)
+     //Particle.variable("Interval", intervalmin); //make watering interval an accessible variable (in particle phone app)
 
 }
 
 void loop() {
     
-    //sensors.requestTemperatures(); // Send the command to get temperatures
-    //T1=sensors.getTempCByIndex(0); // Sensor 0
-      //T2=sensors.getTempCByIndex(1); // Sensor 1
-      //Tavg = (T1+T2)/2;
-    //int Temp = String(T1);
+    intervalmSec = intervalmin * 60000;
     
-    //Particle.publish("SPW_Photon1_Temp1", String(T1));
+
     	
-  digitalWrite(boardLed,HIGH);
+
+
+
+}
+
+int readSensors()
+{
+      digitalWrite(boardLed,HIGH);
   
   String DSTemp = String(ds18b20.getTemperature());
   Particle.publish("DS18B20 Sensor Temp", DSTemp); 
   //ThingSpeak.setField(5,ds18b20.getTemperature());
-  delay(1000);
+  delay(100);
   
   Particle.publish("DHT11 Sensor Temp", String(dht11.getTempCelcius()));
   Particle.publish("DHT11 Sensor Humidity", String(dht11.getHumidity()));
   //ThingSpeak.setField(1,dht11.getTempCelcius());
     //ThingSpeak.setField(2,dht11.getHumidity());
-  delay(1000);
+  delay(100);
   
   String DHT22aTemp = String(dht22a.getTempCelcius());
   Particle.publish("DHT22a Sensor Temp", DHT22aTemp);
@@ -113,16 +134,16 @@ void loop() {
   //ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);  
   Particle.publish("googleDocs", "{\"DSTemp\":\"" + DSTemp + "\", \"DHT22aTemp\":\"" + DHT22aTemp + "\", \"DHT22aRH\":\"" + DHT22aRH + "\", \"DHT22bTemp\":\"" + DHT22bTemp + "\", \"DHT22bRH\":\"" + DHT22bRH + "\"}", 60, PRIVATE);
   digitalWrite(boardLed,LOW);
-  delay(60000);
+  delay(6000);
   
       unsigned long x = millis();
 
-    graph.plot(x, ds18b20.getTemperature(), plotly_tokens[0]);
-    graph.plot(x, dht22a.getTempCelcius(), plotly_tokens[1]);
-    graph.plot(x, dht22a.getHumidity(), plotly_tokens[2]);
-    graph.plot(x, dht22b.getHumidity(), plotly_tokens[3]);
-
-
+    //graph.plot(x, ds18b20.getTemperature(), plotly_tokens[0]);
+    //graph.plot(x, dht22a.getTempCelcius(), plotly_tokens[1]);
+    //graph.plot(x, dht22a.getHumidity(), plotly_tokens[2]);
+    //graph.plot(x, dht22b.getHumidity(), plotly_tokens[3]);
+    
+    return 1;
 }
 
 //The function that handles the event from IFTTT
